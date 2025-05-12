@@ -1,0 +1,9 @@
+[package]
+name = "cranelift-examples"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cranelift = "*"
+cranelift-object = "*"
+cranelift-module = "*"
