@@ -7,3 +7,4 @@ edition = "2024"
 cranelift = "*"
 cranelift-object = "*"
 cranelift-module = "*"
+clap = { version = "*", features = ["cargo"] }
