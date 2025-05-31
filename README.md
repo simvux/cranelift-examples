@@ -6,5 +6,17 @@ This repository is meant to provide tutorial-esque examples of tasks you'll enco
 
 Each example is structured to be either useful in isolation, or explicitly reference another example. I would recommend starting with [Outputting a binary](examples/output-a-binary/main.rs). As all other examples afterwards will use helpermethods which abstract away the boilerplate that it teaches. But other than that they're designed to be unordered.
 
-[Outputting a binary](examples/output-a-binary/main.rs)  
-[Lowering aggregate types such as Structs](examples/lowering-structs/main.rs)
+## Examples
+
+* [Outputting a binary](examples/output-a-binary/main.rs)  
+* [Lowering aggregate types such as Structs](examples/lowering-structs/main.rs)
+
+## Contributing
+
+Try to follow these guidelines in your example: 
+
+* Avoid including anything unrelated to what the example tries to show. 
+* Heavily comment any part that is relevant to the example. 
+* Use duplicated comments. The same comment being copy-pasted in two different files for the same snippet is fine, as any part should be able to be used in isolation. 
+* Use the boilerplate helpers provided by `lib.rs`
+* Use a lot of `let my_ident = { ... };` to create a tree-like code style that mimics the kind of tree structures compilers often lower. 

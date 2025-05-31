@@ -62,5 +62,3 @@ pub fn skip_boilerplate(
         }
     }
 }
-
-pub fn define_main_function() {}
