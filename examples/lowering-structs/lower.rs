@@ -11,12 +11,12 @@ use cranelift_object::ObjectModule;
 pub struct FuncLower<'a, 'f> {
     pub fbuilder: &'a mut cl::FunctionBuilder<'f>,
     pub module: &'a mut ObjectModule,
-    types: &'a types::Resolver,
+    types: &'a types::LookupTable,
 }
 
 impl<'a, 'f> FuncLower<'a, 'f> {
     pub fn new(
-        types: &'a types::Resolver,
+        types: &'a types::LookupTable,
         fbuilder: &'a mut cl::FunctionBuilder<'f>,
         module: &'a mut ObjectModule,
     ) -> Self {
@@ -37,11 +37,13 @@ impl<'a, 'f> FuncLower<'a, 'f> {
     // pub fn expr(&mut self, expr: &ast::Expr) -> VirtualValue {...}
 
     /// Create the entry block with the appropriate Cranelift type signature
+    ///
+    /// Maps the Cranelift function parameters to our virtual values.
     pub fn create_entry_block(&mut self, params: &[Type]) -> (cl::Block, Vec<VirtualValue>) {
         let block = self.fbuilder.create_block();
         self.fbuilder.seal_block(block);
 
-        // See `Resolver::create_signature` for more information
+        // See `LookupTable::create_signature` for more information
         if self.fbuilder.func.signature.uses_struct_return_param() {
             let size_t = self.module.isa().pointer_type();
             self.fbuilder.append_block_param(block, size_t);
@@ -85,8 +87,6 @@ impl<'a, 'f> FuncLower<'a, 'f> {
                 {
                     let size_t = self.module.isa().pointer_type();
                     let ptr = f(self, size_t);
-                    // let ptr = self.fbuilder.append_block_param(block, size_t);
-
                     VirtualValue::StackStruct { type_, ptr }
                 } else {
                     let fields = self
@@ -138,7 +138,7 @@ impl<'a, 'f> FuncLower<'a, 'f> {
             .for_each(|v| self.virtual_value_to_func_params(buf, v));
     }
 
-    // Get the pointer parameter declared by the `Resolver::create_signature` method
+    // Get the pointer parameter declared by the `LookupTable::create_signature` method
     //
     // This will for most targets be the first parameter.
     fn struct_return_pointer(&mut self) -> cl::Value {

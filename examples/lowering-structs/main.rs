@@ -24,15 +24,16 @@ mod types;
 
 use cranelift_object::ObjectModule;
 use lower::FuncLower;
-use types::{Resolver, Type};
+use types::{LookupTable, Type};
 
+// The `VirtualValue` enum keeps track of how our original values are mapped to Cranelift values.
+//
+// One value in our source language might be split across *multiple* Cranelift values.
+// The same value in our source language can even be represented in different ways in Cranelift.
 #[derive(Clone, Debug)]
 enum VirtualValue {
     // A singular value, will generally end up being passed around in registers.
     Scalar(cl::Value),
-
-    // Implicitly putting some structs on the heap can prevent repeated memcpy in some cases
-    // HeapStruct { ptr: cl::Value },
 
     // Our primary way of storing structs will be to create stackslots and write the fields at
     // offsets of the stackslot pointers.
@@ -68,7 +69,7 @@ impl VirtualValue {
 
 fn main() {
     skip_boilerplate(b"struct-and-enum", |ctx, fctx, module, _args| {
-        let mut types = types::Resolver::hardcoded(module.isa().pointer_bytes() as u32);
+        let mut types = types::LookupTable::hardcoded(module.isa().pointer_bytes() as u32);
 
         let main_func_id = declare_main(module, &types);
         let move_right_func_id = declare_move_right(module, &types);
@@ -84,7 +85,7 @@ fn main() {
 }
 
 // fn main();
-fn declare_main(module: &mut ObjectModule, types: &Resolver) -> FuncId {
+fn declare_main(module: &mut ObjectModule, types: &LookupTable) -> FuncId {
     let call_conv = module.isa().default_call_conv();
     let sig = types.create_signature(call_conv, "main");
 
@@ -94,7 +95,7 @@ fn declare_main(module: &mut ObjectModule, types: &Resolver) -> FuncId {
 }
 
 // fn move_right(p: Player, by: int) -> Player;
-fn declare_move_right(module: &mut ObjectModule, types: &Resolver) -> FuncId {
+fn declare_move_right(module: &mut ObjectModule, types: &LookupTable) -> FuncId {
     let call_conv = module.isa().default_call_conv();
     let sig = types.create_signature(call_conv, "move_right");
 
@@ -111,7 +112,7 @@ fn declare_move_right(module: &mut ObjectModule, types: &Resolver) -> FuncId {
 // }
 fn define_main(
     module: &mut ObjectModule,
-    types: &Resolver,
+    types: &LookupTable,
     ctx: &mut Context,
     fctx: &mut FunctionBuilderContext,
     move_right_func_id: FuncId,
@@ -175,7 +176,7 @@ fn define_main(
 // }
 fn define_move_right(
     module: &mut ObjectModule,
-    types: &Resolver,
+    types: &LookupTable,
     ctx: &mut Context,
     fctx: &mut FunctionBuilderContext,
     id: FuncId,

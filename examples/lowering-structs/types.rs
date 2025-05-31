@@ -26,14 +26,14 @@ pub enum StructPassingMode {
 /// How exactly that should be provided will depend a lot on the rest of your compiler.
 /// In this example we're gonna be using a hashmap of stringly identifiers to type data.
 #[derive(Debug)]
-pub struct Resolver {
+pub struct LookupTable {
     struct_fields: HashMap<Name, Vec<(Name, Type)>>,
     function_types: HashMap<Name, (Vec<Type>, Type)>,
     pub function_names: HashMap<FuncId, Name>,
     ptr_size: u32,
 }
 
-impl Resolver {
+impl LookupTable {
     /// Function signatures in Cranelift can look pretty different from the user-provided signature.
     ///
     /// Since Cranelift types/values can only represent primitives, a Struct will need to be passed
