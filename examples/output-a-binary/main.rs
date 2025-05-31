@@ -93,7 +93,7 @@ fn main() {
         let block0 = builder.create_block();
         builder.switch_to_block(block0);
 
-        // When we know that there are no more places which can jump to this block, we want to seal
+        // When we know that there are no more other blocks which can jump to this block, we want to seal
         // it. This improves the quality of code generation.
         builder.seal_block(block0);
 

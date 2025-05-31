@@ -6,5 +6,5 @@ This repository is meant to provide tutorial-esque examples of tasks you'll enco
 
 Each example is structured to be either useful in isolation, or explicitly reference another example. I would recommend starting with [Outputting a binary](examples/output-a-binary/main.rs). As all other examples afterwards will use helpermethods which abstract away the boilerplate that it teaches. But other than that they're designed to be unordered.
 
-[Outputting a binary](examples/output-a-binary/main.rs)
+[Outputting a binary](examples/output-a-binary/main.rs)\ 
 [Lowering aggregate types such as Structs and Enums](examples/struct-and-enum/main.rs)

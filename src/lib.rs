@@ -15,8 +15,8 @@ pub fn skip_boilerplate(
     ),
 ) {
     let args = command!()
-        .arg(arg!(-t --target-triple "Target triple arch-vendor-platform"))
-        .arg(arg!(-o --output "Path for output object file"))
+        .arg(arg!(-t --"target-triple" <TRIPLE> "Target triple arch-vendor-platform"))
+        .arg(arg!(-o --"output" <FILE> "Path for output object file"))
         .get_matches();
 
     let isa = {
@@ -39,7 +39,7 @@ pub fn skip_boilerplate(
         ObjectModule::new(builder)
     };
 
-    let path: Option<PathBuf> = args.get_one("output").cloned();
+    let path: Option<String> = args.get_one("output").cloned();
 
     let mut ctx = codegen::Context::new();
     let mut fctx = FunctionBuilderContext::new();
@@ -55,7 +55,7 @@ pub fn skip_boilerplate(
             let mut f = File::create(&path).unwrap();
             f.write_all(&bytes).unwrap();
 
-            println!(" wrote output to {} ", path.display());
+            println!(" wrote output to {} ", path);
         }
         None => {
             println!(" no `-o` path specified ");
