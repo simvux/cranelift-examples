@@ -52,6 +52,8 @@ fn main() {
         // disable optimizations so dissassembly will more directly correlated to our Cranelift usage
         builder.set("opt_level", "none").unwrap();
 
+        builder.enable("is_pic").unwrap();
+
         let flags = settings::Flags::new(builder);
 
         isa::lookup_by_name(TARGET_TRIPLE)

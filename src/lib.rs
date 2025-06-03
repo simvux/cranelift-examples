@@ -30,6 +30,7 @@ pub fn skip_boilerplate(
         let mut builder = cl::settings::builder();
 
         builder.set("opt_level", "none").unwrap();
+        builder.enable("is_pic").unwrap();
 
         let flags = cl::settings::Flags::new(builder);
 
