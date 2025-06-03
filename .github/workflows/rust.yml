@@ -16,7 +16,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Run examples
+      run: |
+        for example in examples/*
+        do
+          echo $example
+          name=$(basename "${example%.rs}")
+          echo $name
+          mkdir -p "/tmp/example-objects/"
+          cargo run --example "$name" -- -o "/tmp/example-objects/$name.o"
+        done
