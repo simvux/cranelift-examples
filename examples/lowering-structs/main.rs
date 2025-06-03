@@ -16,7 +16,7 @@ use cranelift::{
     codegen::Context,
     prelude::{self as cl, FunctionBuilderContext, InstBuilder},
 };
-use cranelift_examples::skip_boilerplate;
+use cranelift_examples::{signature_from_decl, skip_boilerplate};
 use cranelift_module::{FuncId, Linkage, Module};
 
 mod lower;
@@ -118,11 +118,7 @@ fn define_main(
     move_right_func_id: FuncId,
     id: FuncId,
 ) {
-    ctx.func.signature = module
-        .declarations()
-        .get_function_decl(id)
-        .signature
-        .clone();
+    ctx.func.signature = signature_from_decl(module, id);
     let mut builder = cl::FunctionBuilder::new(&mut ctx.func, fctx);
 
     let mut lower = FuncLower::new(&types, &mut builder, module);
@@ -149,9 +145,9 @@ fn define_main(
 
     // We don't want to return anything from main
     lower.return_(VirtualValue::unit());
-
     builder.finalize();
-    dbg!(&ctx.func);
+
+    println!("fn main:\n{}", &ctx.func);
 
     module.define_function(id, ctx).unwrap();
     ctx.clear();
@@ -181,11 +177,7 @@ fn define_move_right(
     fctx: &mut FunctionBuilderContext,
     id: FuncId,
 ) {
-    ctx.func.signature = module
-        .declarations()
-        .get_function_decl(id)
-        .signature
-        .clone();
+    ctx.func.signature = signature_from_decl(module, id);
     let mut builder = cl::FunctionBuilder::new(&mut ctx.func, fctx);
 
     let mut lower = FuncLower::new(&types, &mut builder, module);
@@ -216,9 +208,9 @@ fn define_move_right(
     };
 
     lower.return_(player);
-
     builder.finalize();
-    dbg!(&ctx.func);
+
+    println!("fn move_right:\n{}", &ctx.func);
 
     module.define_function(id, ctx).unwrap();
     ctx.clear();
