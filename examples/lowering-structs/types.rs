@@ -10,7 +10,6 @@ type Name = &'static str;
 #[derive(Clone, Copy, Debug)]
 pub enum Type {
     Int,
-    Unit,
     Struct(Name),
 }
 
@@ -50,7 +49,6 @@ impl LookupTable {
         // values directly, we use an out pointer as the first parameter. Return will then write
         // the result to that pointer, instead of returning directly through the return registers.
         match fret {
-            Type::Unit => {}
             Type::Int => returns.push(cl::AbiParam::new(cl::types::I32)),
             Type::Struct(name) => match self.struct_passing_mode(name) {
                 StructPassingMode::ByScalars => {
@@ -68,7 +66,6 @@ impl LookupTable {
 
         for p in fparams {
             match p {
-                Type::Unit => {}
                 Type::Int => params.push(cl::AbiParam::new(cl::types::I32)),
                 Type::Struct(name) => match self.struct_passing_mode(name) {
                     StructPassingMode::ByScalars => {
@@ -130,7 +127,6 @@ impl LookupTable {
         F: FnMut(cl::Type),
     {
         match ty {
-            Type::Unit => {}
             Type::Int => f(cl::types::I32),
             Type::Struct(name) => self.for_scalars_of_struct(f, name),
         }

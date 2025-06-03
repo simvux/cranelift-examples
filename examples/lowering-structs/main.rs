@@ -56,13 +56,6 @@ enum VirtualValue {
 }
 
 impl VirtualValue {
-    fn unit() -> Self {
-        VirtualValue::UnstableStruct {
-            type_: "unit",
-            fields: vec![],
-        }
-    }
-
     #[track_caller]
     fn as_scalar(&self) -> cl::Value {
         match self {

@@ -75,7 +75,6 @@ impl<'a, 'f> FuncLower<'a, 'f> {
         F: FnMut(&mut Self, cl::Type) -> cl::Value,
     {
         match p {
-            Type::Unit => VirtualValue::unit(),
             Type::Int => {
                 let v = f(self, cl::types::I32);
                 VirtualValue::Scalar(v)
@@ -226,7 +225,6 @@ impl<'a, 'f> FuncLower<'a, 'f> {
                         let nptr = self.ins().iadd_imm(*ptr, offset as i64);
                         VirtualValue::StackStruct { type_, ptr: nptr }
                     }
-                    Type::Unit => VirtualValue::unit(),
                     Type::Int => {
                         let v = self
                             .ins()
@@ -298,7 +296,6 @@ impl<'a, 'f> FuncLower<'a, 'f> {
             let offset = self.types.offset_of_field(type_, field) + src_offset;
             let fty = self.types.type_of_field(type_, field);
             match fty {
-                Type::Unit => {}
                 Type::Int => {
                     let v = self
                         .ins()
@@ -318,7 +315,6 @@ impl<'a, 'f> FuncLower<'a, 'f> {
             let offset = self.types.offset_of_field(type_, field);
 
             match fty {
-                Type::Unit => {}
                 Type::Int => {
                     let n = self
                         .ins()
