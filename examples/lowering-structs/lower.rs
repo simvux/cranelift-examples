@@ -77,8 +77,7 @@ impl<'a, 'f> FuncLower<'a, 'f> {
         match p {
             Type::Unit => VirtualValue::unit(),
             Type::Int => {
-                let v = f(self, cl::types::I64);
-                // let v = self.fbuilder.append_block_param(block, cl::types::I64);
+                let v = f(self, cl::types::I32);
                 VirtualValue::Scalar(v)
             }
             Type::Struct(type_) => {
@@ -187,7 +186,7 @@ impl<'a, 'f> FuncLower<'a, 'f> {
     }
 
     pub fn int(&mut self, n: i64) -> VirtualValue {
-        let v = self.ins().iconst(cl::types::I64, n);
+        let v = self.ins().iconst(cl::types::I32, n);
         VirtualValue::Scalar(v)
     }
 
@@ -231,7 +230,7 @@ impl<'a, 'f> FuncLower<'a, 'f> {
                     Type::Int => {
                         let v = self
                             .ins()
-                            .load(cl::types::I64, MemFlags::new(), *ptr, offset);
+                            .load(cl::types::I32, MemFlags::new(), *ptr, offset);
                         VirtualValue::Scalar(v)
                     }
                 }
@@ -303,7 +302,7 @@ impl<'a, 'f> FuncLower<'a, 'f> {
                 Type::Int => {
                     let v = self
                         .ins()
-                        .load(cl::types::I64, MemFlags::new(), src, offset);
+                        .load(cl::types::I32, MemFlags::new(), src, offset);
 
                     buf.push(v);
                 }
@@ -323,7 +322,7 @@ impl<'a, 'f> FuncLower<'a, 'f> {
                 Type::Int => {
                     let n = self
                         .ins()
-                        .load(cl::types::I64, MemFlags::new(), src, offset);
+                        .load(cl::types::I32, MemFlags::new(), src, offset);
 
                     self.ins().store(MemFlags::new(), n, dst, offset);
                 }
@@ -367,7 +366,7 @@ impl<'a, 'f> FuncLower<'a, 'f> {
     //
     // For this example we will be skipping caring about alignment, even though alignment is a
     // requirement for performance.
-    fn stack_alloc_struct(&mut self, name: &str) -> cl::Value {
+    pub(super) fn stack_alloc_struct(&mut self, name: &str) -> cl::Value {
         let size = self.types.size_of_struct(name);
         let slot = self.fbuilder.create_sized_stack_slot(cl::StackSlotData {
             kind: cl::StackSlotKind::ExplicitSlot,

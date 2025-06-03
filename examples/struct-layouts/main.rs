@@ -10,6 +10,14 @@
 //! The main function will construct two structs. One small and one large.
 //! These structs will then be given as parameter to a function that returns a new struct
 //! where each field has been incremented.
+//!
+//! Main will return an exit code representing the sum of all fields of the small struct.
+//!
+//! To link against system libraries and produce a binary on Linux or MacOS, you can use `gcc` or `clang`
+//!
+//! `$ cargo run --example struct-layouts -- -o struct-layouts.o`
+//! `$ clang struct-layouts.o -o struct-layouts`
+//! `$ ./struct-layouts; echo $?`
 
 use cranelift::codegen::ir::ArgumentPurpose;
 use cranelift::prelude::isa::CallConv;
@@ -115,7 +123,7 @@ fn main() {
             };
 
             // let _ = inc_small_struct(small_struct);
-            let _incremented_small_struct: Vec<cl::Value> = {
+            let incremented_small_struct: Vec<cl::Value> = {
                 let fref = module.declare_func_in_func(inc_small_funcid, &mut fbuilder.func);
 
                 let call = fbuilder.ins().call(fref, &small_struct);
@@ -123,7 +131,18 @@ fn main() {
                 fbuilder.inst_results(call).to_vec()
             };
 
-            fbuilder.ins().return_(&[]);
+            // Calculate the sum of all fields in the small struct
+            let small_sum = {
+                let init = fbuilder.ins().iconst(types::I32, 0);
+
+                incremented_small_struct
+                    .into_iter()
+                    .fold(init, |sum, v| fbuilder.ins().iadd(sum, v))
+            };
+
+            // Return the sum of all fields in the small struct
+            fbuilder.ins().return_(&[small_sum]);
+
             fbuilder.finalize();
 
             println!("fn main:\n{}", &ctx.func);

@@ -3,7 +3,17 @@
 //! How an object file is later turned into a runnable executable will depend on the operating
 //! system you're on.
 //!
-//! If you're on Linux or MacOS; you can use `ld output-a-binary.o`
+//! You could produce a raw executable that isn't linked to any system libraries using `ld object.o`
+//! and then declare an entrypoint function with the symbol the operating system expects ("_start" on Linux).
+//!
+//! In our examples we'll be linking to libc and declare "main" which is invoked by libc.
+//! When linking against libc, the main function can return an exit code.
+//!
+//! To link against system libraries and produce a binary on Linux or MacOS, you can use `gcc` or `clang`
+//!
+//! `$ cargo run --example output-a-binary`
+//! `$ clang output-a-binary.o -o output-a-binary`
+//! `$ ./output-a-binary; echo $?`
 
 use cranelift::prelude::*;
 use cranelift_module::{Linkage, Module};
@@ -12,9 +22,27 @@ use std::{fs::File, io::Write};
 
 // The platform we're targetting.
 //
-// These constants need to be changed if you're on MacOS/Windows.
+// These constants may need to be changed if you're on MacOS/Windows.
 const TARGET_TRIPLE: &str = "x86_64-unknown-linux";
-const ENTRYPOINT_FUNCTION_SYMBOL: &str = "_start";
+const ENTRYPOINT_FUNCTION_SYMBOL: &str = "main";
+
+fn main_signature(isa: &dyn isa::TargetIsa) -> Signature {
+    // The `CallConv` defines how primitives in parameters and return values are handled.
+    // Mainly which registers are used and when stack spills are used.
+    //
+    // In general it's best to use `CallConv::Fast`.
+    //
+    // However; since the function we define is invoked from our targetted OS, we need to use
+    // the calling convention the OS expects.
+    let call_conv = isa.default_call_conv();
+
+    Signature {
+        call_conv,
+        params: vec![],
+        // Since we're linking to libc, we can return the exit code from main.
+        returns: vec![AbiParam::new(types::I32)],
+    }
+}
 
 fn main() {
     // The ISA contains information about our intended target and acts as the settings for cranelift.
@@ -54,24 +82,8 @@ fn main() {
     // Adding which functions exist in the module and granting them their signatures.
     //
     // In this example there's only one function, the programs entrypoint.
-    let entrypoint_declaration_func_id = {
-        // The `CallConv` defines how primitives in parameters and return values are handled.
-        // Mainly which registers are used and when stack spills are used.
-        //
-        // In general it's best to use `CallConv::Fast`.
-        //
-        // However; since the function we define is invoked from our targetted OS, we need to use
-        // the calling convention the OS expects.
-        let call_conv = isa.default_call_conv();
-
-        // Currently we use the entrypoint `_start` directly which does not have any parameters or return values.
-        //
-        // Later we will link to system libraries where we'll have access to the typical `int main(int argc, char** argv)`
-        let sig = Signature {
-            call_conv,
-            params: vec![],
-            returns: vec![],
-        };
+    let main_declaration_func_id = {
+        let sig = main_signature(&*isa);
 
         // Add this function to our Module.
         module
@@ -88,6 +100,7 @@ fn main() {
         let mut fctx = FunctionBuilderContext::new();
 
         let mut builder = FunctionBuilder::new(&mut ctx.func, &mut fctx);
+        builder.func.signature = main_signature(&*isa);
 
         // Create the functions entry block.
         let block0 = builder.create_block();
@@ -97,12 +110,11 @@ fn main() {
         // it. This improves the quality of code generation.
         builder.seal_block(block0);
 
-        let one = builder.ins().iconst(types::I64, 1);
-        let _two = builder.ins().iadd(one, one);
+        let one = builder.ins().iconst(types::I32, 1);
+        let two = builder.ins().iadd(one, one);
 
-        // We don't have a way of cleanly terminating the program yet.
-        // So instead we induce an SIGILL to uncleanly terminate.
-        builder.ins().trap(TrapCode::user(1).unwrap());
+        // Use the result of the addition as an exit code
+        builder.ins().return_(&[two]);
 
         if let Err(err) = codegen::verify_function(&builder.func, isa.as_ref()) {
             panic!("verifier error: {err}");
@@ -113,7 +125,7 @@ fn main() {
         println!("fn {ENTRYPOINT_FUNCTION_SYMBOL}:\n{}", &ctx.func);
 
         module
-            .define_function(entrypoint_declaration_func_id, &mut ctx)
+            .define_function(main_declaration_func_id, &mut ctx)
             .unwrap();
 
         ctx.clear();

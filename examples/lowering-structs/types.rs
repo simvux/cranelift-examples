@@ -51,7 +51,7 @@ impl LookupTable {
         // the result to that pointer, instead of returning directly through the return registers.
         match fret {
             Type::Unit => {}
-            Type::Int => returns.push(cl::AbiParam::new(cl::types::I64)),
+            Type::Int => returns.push(cl::AbiParam::new(cl::types::I32)),
             Type::Struct(name) => match self.struct_passing_mode(name) {
                 StructPassingMode::ByScalars => {
                     self.for_scalars_of_struct(&mut |ty| returns.push(cl::AbiParam::new(ty)), name)
@@ -69,7 +69,7 @@ impl LookupTable {
         for p in fparams {
             match p {
                 Type::Unit => {}
-                Type::Int => params.push(cl::AbiParam::new(cl::types::I64)),
+                Type::Int => params.push(cl::AbiParam::new(cl::types::I32)),
                 Type::Struct(name) => match self.struct_passing_mode(name) {
                     StructPassingMode::ByScalars => {
                         self.for_scalars_of_struct(
@@ -94,7 +94,7 @@ impl LookupTable {
 
     pub fn hardcoded(ptr_size: u32) -> Self {
         let function_types = [
-            ("main", (vec![], Type::Unit)),
+            ("main", (vec![], Type::Int)),
             (
                 "move_right",
                 (
@@ -131,7 +131,7 @@ impl LookupTable {
     {
         match ty {
             Type::Unit => {}
-            Type::Int => f(cl::types::I64),
+            Type::Int => f(cl::types::I32),
             Type::Struct(name) => self.for_scalars_of_struct(f, name),
         }
     }

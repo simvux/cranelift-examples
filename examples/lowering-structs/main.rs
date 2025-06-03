@@ -11,6 +11,11 @@
 //! a previous IR before its time to lower into LLVM/Cranelift IR.
 //!
 //! * This example will *not* go over alignment. Which makes it inefficient and incompatible with ABI's.
+//!   See the `struct-layouts` example for suggestions on alignment.
+//!
+//! `$ cargo run --example lowering-structs -- -o lowering-structs.o`
+//! `$ clang lowering-structs.o -o lowering-structs`
+//! `$ ./lowering-structs; echo $?`
 
 use cranelift::{
     codegen::Context,
@@ -104,11 +109,12 @@ fn declare_move_right(module: &mut ObjectModule, types: &LookupTable) -> FuncId 
         .unwrap()
 }
 
-// fn main() {
+// fn main() -> int {
 //   move_right(Player {
 //      id: 5,
 //      position: Point { x: 10, y: 20 },
 //   }, 2);
+//   return 0;
 // }
 fn define_main(
     module: &mut ObjectModule,
@@ -118,14 +124,14 @@ fn define_main(
     move_right_func_id: FuncId,
     id: FuncId,
 ) {
-    ctx.func.signature = signature_from_decl(module, id);
     let mut builder = cl::FunctionBuilder::new(&mut ctx.func, fctx);
+    builder.func.signature = signature_from_decl(module, id);
 
     let mut lower = FuncLower::new(&types, &mut builder, module);
     let (entry, _vparams) = lower.create_entry_block(&[]);
     lower.fbuilder.switch_to_block(entry);
 
-    let player = {
+    let player: VirtualValue = {
         let id = lower.int(5);
 
         let position = {
@@ -138,13 +144,14 @@ fn define_main(
         lower.construct_struct("Player", &[("id", id), ("position", position)])
     };
 
-    let _move_right_call = {
-        let two = lower.ins().iconst(cl::types::I64, 2);
-        lower.call_func(move_right_func_id, vec![player, VirtualValue::Scalar(two)]);
+    let _moved_player: VirtualValue = {
+        let two = lower.ins().iconst(cl::types::I32, 2);
+        lower.call_func(move_right_func_id, vec![player, VirtualValue::Scalar(two)])
     };
 
-    // We don't want to return anything from main
-    lower.return_(VirtualValue::unit());
+    let exit_code = lower.int(0);
+    lower.return_(exit_code);
+
     builder.finalize();
 
     println!("fn main:\n{}", &ctx.func);

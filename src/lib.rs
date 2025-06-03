@@ -7,6 +7,13 @@ use cranelift_module::{FuncId, Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use std::{fs::File, io::Write};
 
+pub fn parse_arguments() -> clap::ArgMatches {
+    command!()
+        .arg(arg!(-t --"target-triple" <TRIPLE> "Target triple arch-vendor-platform"))
+        .arg(arg!(-o --"output" <FILE> "Path for output object file"))
+        .get_matches()
+}
+
 /// Performs initialization and finalization of cranelift similarly to the instructions provided in [output-a-binary](examples/output-a-binary/main.rs)
 pub fn skip_boilerplate(
     unit_name: &[u8],
@@ -17,10 +24,7 @@ pub fn skip_boilerplate(
         clap::ArgMatches,
     ),
 ) {
-    let args = command!()
-        .arg(arg!(-t --"target-triple" <TRIPLE> "Target triple arch-vendor-platform"))
-        .arg(arg!(-o --"output" <FILE> "Path for output object file"))
-        .get_matches();
+    let args = parse_arguments();
 
     let isa = {
         let mut builder = cl::settings::builder();
@@ -102,7 +106,10 @@ pub fn create_entry_block(fbuilder: &mut cl::FunctionBuilder<'_>) -> cl::Block {
 // fn main();
 pub fn declare_main(module: &mut ObjectModule) -> FuncId {
     let call_conv = module.isa().default_call_conv();
-    let sig = cl::Signature::new(call_conv);
+    let mut sig = cl::Signature::new(call_conv);
+
+    // Add the exit code return type
+    sig.returns.push(cl::AbiParam::new(cl::types::I32));
 
     module
         .declare_function("main", Linkage::Export, &sig)
