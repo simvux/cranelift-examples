@@ -110,6 +110,8 @@ fn main() {
 
         builder.finalize();
 
+        println!("fn {ENTRYPOINT_FUNCTION_SYMBOL}:\n{}", &ctx.func);
+
         module
             .define_function(entrypoint_declaration_func_id, &mut ctx)
             .unwrap();
@@ -131,6 +133,6 @@ fn main() {
         let mut f = File::create(fname).unwrap();
         f.write_all(&bytes).unwrap();
 
-        println!("wrote output to {fname}");
+        println!(" wrote output to {fname}");
     }
 }
