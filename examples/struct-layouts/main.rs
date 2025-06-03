@@ -21,7 +21,7 @@ use cranelift_examples::{declare_main, function_builder_from_declaration, skip_b
 use cranelift_object::ObjectModule;
 
 fn main() {
-    skip_boilerplate(b"struct-and-enum", |ctx, fctx, module, _args| {
+    skip_boilerplate(b"struct-layouts", |ctx, fctx, module, _args| {
         let size_t = module.isa().pointer_type();
 
         let small_struct_fields = &[types::I32, types::I32];

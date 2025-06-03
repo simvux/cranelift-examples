@@ -68,7 +68,7 @@ impl VirtualValue {
 }
 
 fn main() {
-    skip_boilerplate(b"struct-and-enum", |ctx, fctx, module, _args| {
+    skip_boilerplate(b"lowering-structs", |ctx, fctx, module, _args| {
         let mut types = types::LookupTable::hardcoded(module.isa().pointer_bytes() as u32);
 
         let main_func_id = declare_main(module, &types);
