@@ -24,9 +24,9 @@ use cranelift::prelude::isa::CallConv;
 use cranelift::prelude::{InstBuilder, types};
 use cranelift::{codegen::ir::StackSlot, prelude as cl};
 use cranelift_module::{FuncId, Linkage, Module};
+use cranelift_object::ObjectModule;
 
 use cranelift_examples::{declare_main, function_builder_from_declaration, skip_boilerplate};
-use cranelift_object::ObjectModule;
 
 fn main() {
     skip_boilerplate(b"struct-layouts", |ctx, fctx, module, _args| {
@@ -44,9 +44,11 @@ fn main() {
         //   let small_struct = SmallStruct {...};
         //
         //   let _ = inc_large_struct(large_struct);
-        //   let _ = inc_small_struct(small_struct);
+        //   let incremented_small_struct = inc_small_struct(small_struct);
         //
-        //   return;
+        //   let small_sum = incremented_small_struct.a + incremented_small_struct.b;
+        //
+        //   return small_sum;
         // }
         {
             let (mut fbuilder, _) =
@@ -122,7 +124,7 @@ fn main() {
                 out_ptr
             };
 
-            // let _ = inc_small_struct(small_struct);
+            // let incremented_small_struct = inc_small_struct(small_struct);
             let incremented_small_struct: Vec<cl::Value> = {
                 let fref = module.declare_func_in_func(inc_small_funcid, &mut fbuilder.func);
 
@@ -132,6 +134,8 @@ fn main() {
             };
 
             // Calculate the sum of all fields in the small struct
+            //
+            // let small_sum = incremented_small_struct.a + incremented_small_struct.b;
             let small_sum = {
                 let init = fbuilder.ins().iconst(types::I32, 0);
 
@@ -141,6 +145,8 @@ fn main() {
             };
 
             // Return the sum of all fields in the small struct
+            //
+            // return small_sum;
             fbuilder.ins().return_(&[small_sum]);
 
             fbuilder.finalize();
