@@ -10,6 +10,7 @@ Each example is structured to be either useful in isolation, or explicitly refer
 
 * [Outputting a binary](examples/output-a-binary/main.rs)  
 * [Representing Struct](examples/struct-layouts/main.rs)  
+* [Representing Tagged Unions (`enum`)](examples/tagged-union-layouts/main.rs)  
 * [Lowering aggregate types such as Structs](examples/lowering-structs/main.rs)
 
 ## Contributing
