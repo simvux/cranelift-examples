@@ -36,7 +36,7 @@ pub fn skip_boilerplate(
 
         let triple = args
             .get_one::<&str>("target-triple")
-            .unwrap_or_else(|| &"x86_64-unknown-linux");
+            .unwrap_or(&"x86_64-unknown-linux");
 
         cl::isa::lookup_by_name(triple)
             .unwrap()
