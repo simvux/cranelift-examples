@@ -3,15 +3,15 @@
 //! For performant results, you ideally want to lower differently sized enums/variants in different
 //! ways.
 //!
-//! When the enum doesn't have any variants with parameters, and is just a tag.
-//! Then it's simply named constants for an integer.
+//! If the enum doesn't have any variants with parameters, it'll just have a tag and function like
+//! named constants for an integer.
 //!
-//! For variants with payloads then a straight forward way to implement them is to have a tag+pointer.
-//! We will then select upon the tag and cast the pointer into different data depending on the case.
+//! Variants with payloads are implement as a tag+pointer. We will then select upon the tag and
+//! cast the pointer into different data depending on the case.
 //!
-//! If the payload of a variant is small enough, then instead of being stored indirectly through a
-//! pointer, the pointer can be treated as an inlined integer scalar which is then reduced to the right
-//! size depending on the case.
+//! If the payload of a variant is small enough, instead of storing it indirectly through a
+//! pointer, the pointer can be treated as an inlined integer scalar and the value will be
+//! extended / truncated to the right size.
 //!
 //! In this example all tagged union types will have the size `TAG_TYPE.bytes() + size_t`
 //!
@@ -75,7 +75,7 @@ fn main() {
             // let packet_pending = Packet::Pending
             //
             // Even though this variant doesn't have a payload, all values of type `Packet`
-            // still needs to have the same size. Therefore we still create a zeroed inlined payload.
+            // still needs to have the same size. Therefore, we still create a zeroed inlined payload.
             let _packet_pending =
                 construct_tagged_union(module, &mut fbuilder, TAG_PACKET_PENDING, &[]);
 
@@ -179,10 +179,10 @@ fn switch_to_branch_block(fbuilder: &mut FunctionBuilder<'_>, call: BlockCall) {
 
 // Convert the payload to the requested type.
 //
-// For larger payloads the `size_t` value will be treated as a pointer for us to read the
+// For larger payloads, the `size_t` value will be treated as a pointer to read the
 // variant parameters from.
 //
-// For smaller payloads, the `size_t` will be casted to the parameter.
+// For smaller payloads, the `size_t` will be cast to the parameter.
 fn read_payload<const N: usize>(
     size_t: cl::Type,
     fbuilder: &mut FunctionBuilder<'_>,

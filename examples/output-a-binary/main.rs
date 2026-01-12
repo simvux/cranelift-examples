@@ -6,7 +6,7 @@
 //! You could produce a raw executable that isn't linked to any system libraries using `ld object.o`
 //! and then declare an entrypoint function with the symbol the operating system expects ("_start" on Linux).
 //!
-//! In our examples we'll be linking to libc and declare "main" which is invoked by libc.
+//! In our examples, we'll be linking to libc and declare "main" which is invoked by libc.
 //! When linking against libc, the main function can return an exit code.
 //!
 //! To link against system libraries and produce a binary on Linux or MacOS, you can use `gcc` or `clang`
@@ -20,7 +20,7 @@ use cranelift_module::{Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use std::{fs::File, io::Write};
 
-// The platform we're targetting.
+// The platform we're targeting.
 //
 // These constants may need to be changed if you're on MacOS/Windows.
 const TARGET_TRIPLE: &str = "x86_64-unknown-linux";
@@ -30,9 +30,9 @@ fn main_signature(isa: &dyn isa::TargetIsa) -> Signature {
     // The `CallConv` defines how primitives in parameters and return values are handled.
     // Mainly which registers are used and when stack spills are used.
     //
-    // In general it's best to use `CallConv::Fast`.
+    // In general, it's best to use `CallConv::Fast`.
     //
-    // However; since the function we define is invoked from our targetted OS, we need to use
+    // However, since the function we define is invoked from our targeted OS, we need to use
     // the calling convention the OS expects.
     let call_conv = isa.default_call_conv();
 
@@ -49,7 +49,7 @@ fn main() {
     let isa = {
         let mut builder = settings::builder();
 
-        // disable optimizations so dissassembly will more directly correlated to our Cranelift usage
+        // disable optimizations so disassembly will more directly correlated to our Cranelift usage
         builder.set("opt_level", "none").unwrap();
 
         builder.enable("is_pic").unwrap();
@@ -68,7 +68,7 @@ fn main() {
     // what sort of environment you're generating code into.
     //
     // Our objective is to generate an ahead-of-time compiled binary.
-    // So; we use the `cranelift-object` crate which exposes `ObjectModule` as a Module implementation.
+    // So we'll use the `cranelift-object` crate, which exposes `ObjectModule` as a Module implementation.
     //
     // Object refers to object files (`.o` on unix-like systems and `.obj` on Windows).
     // These files contain unlinked machine code, and we can then use a 'linker' to merge them into our final executable.
@@ -80,10 +80,9 @@ fn main() {
         ObjectModule::new(builder)
     };
 
-    // First we declare our functions.
-    // Adding which functions exist in the module and granting them their signatures.
+    // First we declare our functions by adding which functions exist in the module and granting them their signatures.
     //
-    // In this example there's only one function, the programs entrypoint.
+    // In this example, there's only one function, the program's entrypoint.
     let main_declaration_func_id = {
         let sig = main_signature(&*isa);
 
@@ -95,7 +94,7 @@ fn main() {
 
     // Define the contents of our functions
     {
-        // These contains the context needed for genering code for a function.
+        // These contain the context needed for generating code for a function.
         //
         // It's a lot more efficient to construct them once, and then re-use them for all functions.
         let mut ctx = codegen::Context::new();
@@ -108,7 +107,7 @@ fn main() {
         let block0 = builder.create_block();
         builder.switch_to_block(block0);
 
-        // When we know that there are no more other blocks which can jump to this block, we want to seal
+        // When we know that there are no more blocks to be written which may jump to this block, we want to seal
         // it. This improves the quality of code generation.
         builder.seal_block(block0);
 
@@ -136,7 +135,7 @@ fn main() {
     // Finalize the module to generate our `Product`.
     //
     // If we have additional information such as unwind information or DWARF debug information,
-    // they can be added to `Product`. For this example we skip such optional additions.
+    // they can be added to `Product`. For this example, we'll skip such optional additions.
     let product = module.finish();
 
     // Generate the object file.

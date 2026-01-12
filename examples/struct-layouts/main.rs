@@ -3,11 +3,11 @@
 //! We will ensure all our structs are aligned. This substantially improves performance since it
 //! lowers the amount of loads a CPU has to do, and is a hard requirement for a lot of ABI's.
 //!
-//! We will not be covering nested structs or circular structs here. But if you are, then keep in
+//! We will not be covering nested structs or circular structs here. But if you are, keep in
 //! mind that you will need to check for recursive data types, and either fail to compile or
 //! automatically box the fields to make the structs finitely sized.
 //!
-//! The main function will construct two structs. One small and one large.
+//! The main function will construct two structs: One small and one large.
 //! These structs will then be given as parameter to a function that returns a new struct
 //! where each field has been incremented.
 //!
@@ -61,16 +61,15 @@ fn main() {
             //   d: 4, // i16
             // };
             let large_struct: cl::Value = {
-                // For larger structs, we reserve space on the stack and pass it around as a pointer
+                // For larger structs, we reserve space on the stack and pass it around as a pointer.
                 //
-                // Assigning a field will be storing to that pointer
-                // Accessing a field will be loading from that pointer.
+                // Assigning a field will be loading from / storing to that pointer.
                 let struct_stack_slot: StackSlot =
                     stack_alloc(&mut fbuilder, size_of_struct(large_struct_fields));
 
                 // Here we use the `stack_` prefixed instructions to act upon the `cl::StackSlot` directly.
-                // However; in a real compiler it might be easier to first get the pointer as a `cl::Value`
-                // by using `FunctionBuilder::ins().stack_addr(...)` and then using `FunctionBuilder::ins().store(...)`
+                // In a real compiler it might be easier to first get the pointer as a `cl::Value` with
+                // `FunctionBuilder::ins().stack_addr(...)` and then using `FunctionBuilder::ins().store(...)`
 
                 for (i, n) in [1, 2, 3, 4].into_iter().enumerate() {
                     let offset = offset_of_field(i, large_struct_fields);
@@ -98,7 +97,7 @@ fn main() {
             //   b: 2, // i32
             // };
             let small_struct: Vec<cl::Value> = {
-                // For smaller structs, it's often unecesarry to introduce indirection.
+                // For smaller structs, it's often unnecessary to introduce indirection.
                 // Just passing around the fields as values can allow the struct to remain entirely in
                 // registers.
                 [1, 2]
@@ -242,7 +241,7 @@ fn declare_increment_large(module: &mut ObjectModule, large_struct_fields: &[cl:
     let sig = cl::Signature {
         params: vec![
             // Setting this argument purpose will generate memcpy'ing of the struct before
-            // crossing the function boundry, so that the instance of the struct available in
+            // crossing the function boundary, so that the instance of the struct available in
             // the called function is unique.
             cl::AbiParam::special(size_t, ArgumentPurpose::StructArgument(struct_size)),
             // Setting this argument purpose will ensure that the pointer to write the
@@ -298,7 +297,7 @@ fn stack_alloc(fbuilder: &mut cl::FunctionBuilder<'_>, size: u32) -> StackSlot {
 fn size_of_struct(fields: &[cl::Type]) -> u32 {
     let mut size = 0;
 
-    // Go through all fields and incement size by each fields size and padding
+    // Go through all fields and increment size by each fields size and padding
     for &field in fields {
         size += field.bytes();
 
@@ -323,7 +322,7 @@ fn alignment_of_scalar_type(of: cl::Type) -> u32 {
 fn alignment_of_struct(fields: &[cl::Type]) -> u32 {
     let mut alignment = 0;
 
-    // Since we don't have nested structs, the allignment of a struct is simply its largest field.
+    // Since we don't have nested structs, the alignment of a struct is simply its largest field.
     for &field in fields {
         let field_alignment = alignment_of_scalar_type(field);
         alignment = alignment.max(field_alignment);

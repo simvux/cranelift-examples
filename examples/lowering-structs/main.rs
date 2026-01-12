@@ -1,14 +1,14 @@
 //! This example shows how to lower aggregate types such as structs.
 //!
 //! We'll go over how they can be constructed, optimized, and passed across the
-//! function parameter/return boundry.
+//! function parameter/return boundary.
 //!
-//! The input we'll be working with is a AST-like `Type` type and a lookup table.
+//! The input we'll be working with is an AST-like `Type` type and a lookup table.
 //!
 //! Things to keep in mind for your own compiler:
 //!
 //! * Usually, things like field names and stringly identifiers would've already been desugared in
-//! a previous IR before its time to lower into LLVM/Cranelift IR.
+//! a previous IR before they are lower into LLVM/Cranelift IR.
 //!
 //! * This example will *not* go over alignment. Which makes it inefficient and incompatible with ABI's.
 //!   See the `struct-layouts` example for suggestions on alignment.
