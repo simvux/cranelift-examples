@@ -82,7 +82,7 @@ fn main() {
     });
 }
 
-// fn main();
+// fn main() -> int;
 fn declare_main(module: &mut ObjectModule, types: &LookupTable) -> FuncId {
     let call_conv = module.isa().default_call_conv();
     let sig = types.create_signature(call_conv, "main");

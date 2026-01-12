@@ -162,11 +162,11 @@ fn declare_f0_real_function(module: &mut ObjectModule) -> FuncId {
         .unwrap()
 }
 
-// Declare the underlying function for the closure `f0`.
+// Declare the underlying function for the closure `f1`.
 //
 // All the captures are implicitly added as parameter.
 //
-// fn f1(a: int, b: int, x: int) -> int { a + x + 1 }
+// fn f1(a: int, b: int, x: int) -> int { a + x + b }
 fn declare_f1_real_function(module: &mut ObjectModule) -> FuncId {
     // (a: int, b: int, x: int) -> int
     let sig = cl::Signature {

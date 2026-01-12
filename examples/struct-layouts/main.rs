@@ -300,7 +300,7 @@ fn size_of_struct(fields: &[cl::Type]) -> u32 {
 
     // Go through all fields and incement size by each fields size and padding
     for &field in fields {
-        size += field.bytes() as u32;
+        size += field.bytes();
 
         // Add padding to ensure the field is aligned
         let align = alignment_of_scalar_type(field);

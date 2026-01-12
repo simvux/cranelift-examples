@@ -49,7 +49,7 @@ fn main() {
         // fn main() -> i32 {
         //   let packet_data = Packet::Data(1, 2, 3);
         //   let packet_pending = Packet::Pending;
-        //   let packet_failed = Packet::Failed(500);
+        //   let packet_failed = Packet::Failed(100);
         //
         //   let matched = packet_data;
         //
@@ -126,7 +126,7 @@ fn main() {
                     fbuilder.ins().return_(&[ten]);
                 }
 
-                // Packet::Pending => return 10,
+                // Packet::Data(x, y, z) => return x + y + z,
                 {
                     switch_to_branch_block(&mut fbuilder, branches[TAG_PACKET_DATA as usize]);
 
