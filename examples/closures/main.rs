@@ -7,15 +7,13 @@
 //! let fs = [f0, f1];
 //! ```
 //! These two closures capture different values. However; They're put in the same array.
-//! This is meant to be valid as the closures have the same type signature `int -> int`.
+//! In our fictional language, this should be valid as the closures have the same type signature `int -> int`.
 //!
 //! We need a way to type-erase the captures and make all closures of the same type have the same size.
 //!
-//! A simple way to accomplish this is to make all closure a pair of a function pointer, and and
-//! opaque capture pointer.
-//!
-//! This way; the captures can be dynamically dereferenced from the pointer and all closures will
-//! be the exact same size.
+//! A simple way to accomplish this is to make all closure a pair of a function pointer and opaque
+//! capture pointer, so the captures can be dynamically dereferenced from the pointer and all
+//! closures will be the exact same size.
 //!
 //! ```
 //! let f0 = { data: &(a)   , func: |data, x| (*data).a + x + 1 };
@@ -162,11 +160,11 @@ fn declare_f0_real_function(module: &mut ObjectModule) -> FuncId {
         .unwrap()
 }
 
-// Declare the underlying function for the closure `f0`.
+// Declare the underlying function for the closure `f1`.
 //
 // All the captures are implicitly added as parameter.
 //
-// fn f1(a: int, b: int, x: int) -> int { a + x + 1 }
+// fn f1(a: int, b: int, x: int) -> int { a + x + b }
 fn declare_f1_real_function(module: &mut ObjectModule) -> FuncId {
     // (a: int, b: int, x: int) -> int
     let sig = cl::Signature {
@@ -202,14 +200,13 @@ impl Closure {
     }
 }
 
-// When invoking the closure, we can't know the types of the captures.
-// However; here where we construct the closure we do know the types.
+// When invoking the closure, we can't know the types of the captures. We only know them when constructing the closure.
 //
 // To make this work we need to perform some form of type erasure, to make all closures with
 // the same signatures behave the same regardless of captures.
 //
-// We do that by first boxing all the captures, and then create an intermediate function which
-// dereferences the captures and forwards them to the 'real' function pointer.
+// First, we'll box all the captures, and then create an intermediate function which
+// dereferences the captures, and forwards them to the 'real' function pointer.
 fn construct_closure(
     module: &mut ObjectModule,
     fbuilder: &mut FunctionBuilder<'_>,
@@ -240,13 +237,12 @@ fn construct_closure(
 
 // If we have a closure with the user-facing signature `(int, int) -> int`
 //
-// Then the closure's actual signature will be `(*void, int, int) -> int`
-// Where `*void` represents a pointer to the captures.
+// Then the closure's actual signature will be `(*void, int, int) -> int`,
+// where `*void` represents a pointer to the captures.
 //
-// We need to dereferences those captures and forward them to the real function defined where the
-// closure is created (in this example `f0_real_function` and `f1_real_function`).
-//
-// We do so with what we here call the "forwarding function".
+// We need to dereference those captures and forward them to the real function defined where the
+// closure is created (in this example `f0_real_function` and `f1_real_function`), which this
+// "forwarding function" takes care of.
 //
 // So for the `f1` we'd define.
 //
@@ -258,7 +254,7 @@ fn construct_closure(
 // }
 // ```
 //
-// And then the actual values we will pass around in memory would be.
+// And then the actual values will be passed around in memory.
 // ```
 // let closure = { data: alloc([1, 2]), func: closure_forward_f1_real_function };
 // ```
@@ -273,7 +269,7 @@ fn create_forwarding_func(
     f: FuncId,
     captys: &[Type],
 ) -> (FuncId, cl::Signature) {
-    // In a real compiler, this symbol needs to be generated in a way that's garenteed to be
+    // In a real compiler, this symbol needs to be generated in a way that's guaranteed to be
     // unique. You could for example use source code spans, capture type information, or a global counter.
     let symbol = format!("closure_forward_{f}");
 
@@ -347,7 +343,7 @@ fn stack_alloc_captures(
 ) -> cl::Value {
     let size_t = module.isa().pointer_type();
 
-    // Unlike the `struct-layouts` example, we will not be caring about alignment or padding here.
+    // Unlike the `struct-layouts` example, we will not care about alignment or padding here.
     //
     // So the size of the stack allocation will just be the sum of the fields we're allocating.
     let size = captures

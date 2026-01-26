@@ -45,8 +45,8 @@ impl LookupTable {
         let mut params = vec![];
         let mut returns = vec![];
 
-        // If the return value is a large struct that's passed as pointer, then instead of returning its
-        // values directly, we use an out pointer as the first parameter. Return will then write
+        // If the return value is a large struct that's passed as pointer, instead of returning its
+        // values directly, we use an out pointer as the first parameter. The callee will write
         // the result to that pointer, instead of returning directly through the return registers.
         match fret {
             Type::Int => returns.push(cl::AbiParam::new(cl::types::I32)),
