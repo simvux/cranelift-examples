@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-cranelift = "*"
-cranelift-object = "*"
-cranelift-module = "*"
-clap = { version = "*", features = ["cargo"] }
+clap = { version = "4.5.57", features = ["cargo"] }
+cranelift = "0.128.3"
+cranelift-module = "0.128.3"
+cranelift-object = "0.128.3"
