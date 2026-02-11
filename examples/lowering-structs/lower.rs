@@ -364,11 +364,13 @@ impl<'a, 'f> FuncLower<'a, 'f> {
     // requirement for performance.
     pub(super) fn stack_alloc_struct(&mut self, name: &str) -> cl::Value {
         let size = self.types.size_of_struct(name);
-        let slot = self.fbuilder.create_sized_stack_slot(cl::StackSlotData {
-            kind: cl::StackSlotKind::ExplicitSlot,
-            size,
-            align_shift: 0,
-        });
+        let slot = self
+            .fbuilder
+            .create_sized_stack_slot(cl::StackSlotData::new(
+                cl::StackSlotKind::ExplicitSlot,
+                size,
+                0,
+            ));
 
         let size_t = self.module.isa().pointer_type();
         self.ins().stack_addr(size_t, slot, 0)

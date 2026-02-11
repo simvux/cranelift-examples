@@ -99,13 +99,13 @@ fn main() {
                 // Declare all the blocks for the jump table branches
                 let branches = [TAG_PACKET_PENDING, TAG_PACKET_DATA, TAG_PACKET_FAILED].map(|_| {
                     let block = fbuilder.create_block();
-                    BlockCall::new(block, &[], &mut fbuilder.func.dfg.value_lists)
+                    BlockCall::new(block, [], &mut fbuilder.func.dfg.value_lists)
                 });
 
                 // Declare the block for the default branch
                 let trap = {
                     let block = fbuilder.create_block();
-                    BlockCall::new(block, &[], &mut fbuilder.func.dfg.value_lists)
+                    BlockCall::new(block, [], &mut fbuilder.func.dfg.value_lists)
                 };
 
                 // Create the table
